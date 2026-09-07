@@ -285,6 +285,32 @@
   .final .starecho{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
   .final .starecho svg{width:26px;height:auto;fill:var(--accent);stroke:var(--accent);stroke-width:1.4}
   .final .starecho svg.off{fill:transparent;stroke:var(--muted-2)}
+  /* carte avis Google */
+  .gcard{
+    margin:32px auto 0;max-width:460px;text-align:center;
+    background:linear-gradient(180deg,var(--surface-2),var(--surface));
+    border:1px solid var(--line);border-radius:22px;padding:28px 24px 26px;
+    animation:rise .8s var(--ease) .25s both;
+  }
+  .gcard .glogo{width:34px;height:34px;margin:0 auto 14px;display:block}
+  .gcard h2{
+    font-size:clamp(18px,3.6vw,22px);font-weight:800;letter-spacing:-.01em;
+    line-height:1.25;margin-bottom:10px;text-wrap:balance;
+  }
+  .gcard p{font-size:14.5px;line-height:1.55;color:var(--muted);margin:0 auto 20px;max-width:36ch}
+  .gstars{display:flex;justify-content:center;gap:5px;margin-bottom:16px}
+  .gstars svg{width:20px;height:20px;fill:#fbbc04;stroke:none}
+  .gbtn{
+    display:inline-flex;align-items:center;justify-content:center;gap:11px;
+    background:#fff;color:#111;border-radius:var(--radius);
+    padding:15px 28px;font-size:15px;font-weight:800;text-decoration:none;
+    box-shadow:0 10px 30px -10px rgba(255,255,255,.35);
+    transition:transform .18s var(--ease),box-shadow .25s var(--ease);
+  }
+  .gbtn:hover{transform:translateY(-2px);box-shadow:0 16px 38px -10px rgba(255,255,255,.45)}
+  .gbtn svg{width:19px;height:19px;flex:none}
+  .gnote{margin-top:14px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-2);font-weight:700}
+
   .recap{
     margin:30px auto 0;max-width:440px;text-align:left;
     background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 22px;
@@ -349,6 +375,12 @@
    Laisse "" pour désactiver l'envoi (les réponses sortent en console).
    ============================================================ */
 const WEBHOOK_URL = "";
+
+/* ============================================================
+   AVIS GOOGLE — lien « laisser un avis » de la fiche Google.
+   Laisse "" pour masquer complètement la carte à la fin.
+   ============================================================ */
+const GOOGLE_REVIEW_URL = "https://g.page/r/CeuBaA8OMRQnEAE/review";
 
 /* ---------------- Question model ----------------
    types : stars | single | textarea | text
@@ -673,13 +705,37 @@ function renderFinal(){
               : ` — et ton commentaire pourra servir de témoignage, sans jamais être associé à un nom`)
           : `, de façon totalement anonyme`}.`
       : `Merci pour ta franchise. Ton retour est transmis à l'équipe et on s'en sert directement pour corriger le tir.`}</p>
-    <div class="cta-row">
-      <span style="color:var(--muted);font-size:13px">Tu peux fermer cette page.</span>
-    </div>
+    ${renderGoogle(happy)}
     ${renderRecap()}`;
   mount(s);
   stepcount.textContent='Terminé';
   submitToWebhook();
+}
+
+const G_LOGO = '<svg class="glogo" viewBox="0 0 24 24" aria-hidden="true">'
+  + '<path fill="#4285F4" d="M23.52 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.87z"/>'
+  + '<path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.01c-1.08.72-2.45 1.16-4.05 1.16-3.11 0-5.75-2.1-6.69-4.93H1.29v3.09A11.99 11.99 0 0 0 12 24z"/>'
+  + '<path fill="#FBBC05" d="M5.31 14.31A7.2 7.2 0 0 1 4.93 12c0-.8.14-1.58.38-2.31V6.6H1.29A11.99 11.99 0 0 0 0 12c0 1.94.46 3.77 1.29 5.4l4.02-3.09z"/>'
+  + '<path fill="#EA4335" d="M12 4.77c1.76 0 3.33.61 4.57 1.79l3.43-3.43C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.29 6.6l4.02 3.09C6.25 6.87 8.89 4.77 12 4.77z"/></svg>';
+
+const G_STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.58 1.11 6.47L12 17.45 6.19 20.5 7.3 14.03 2.6 9.45l6.5-.95L12 2.6z"/></svg>';
+
+function renderGoogle(happy){
+  if(!GOOGLE_REVIEW_URL) return `<div class="cta-row"><span style="color:var(--muted);font-size:13px">Tu peux fermer cette page.</span></div>`;
+  return `<div class="gcard">
+    ${G_LOGO}
+    <div class="gstars">${G_STAR.repeat(5)}</div>
+    <h2>${happy
+      ? `Un dernier coup de pouce ?`
+      : `Tu veux aussi le dire publiquement ?`}</h2>
+    <p>${happy
+      ? `Si tu as 30 secondes, un avis sur notre fiche Google fait une vraie différence — c'est ce que les courtiers regardent avant de nous appeler.`
+      : `Ton retour ici reste privé. Si tu veux aussi laisser un avis public sur notre fiche Google, c'est par ici — on le prend tel quel.`}</p>
+    <a class="gbtn" href="${GOOGLE_REVIEW_URL}" target="_blank" rel="noopener noreferrer">
+      ${G_LOGO.replace('class="glogo" ','')} Laisser un avis Google
+    </a>
+    <div class="gnote">Ouvre dans un nouvel onglet · ~30 secondes</div>
+  </div>`;
 }
 
 function renderRecap(){

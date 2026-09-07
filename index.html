@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Ton avis sur notre collaboration — 7 questions, moins de 2 minutes.">
+<meta name="description" content="Ton avis anonyme sur notre collaboration — 7 questions, moins de 2 minutes.">
 <meta name="theme-color" content="#0a0a0b">
-<meta property="og:title" content="Suna Films Media — Ton avis compte">
-<meta property="og:description" content="Quelques questions rapides sur notre collaboration. Moins de 2 minutes.">
+<meta property="og:title" content="Suna Films Media — Ton avis anonyme">
+<meta property="og:description" content="Quelques questions anonymes sur notre collaboration. Moins de 2 minutes.">
 <meta name="robots" content="noindex">
-<title>Suna Films Media — Ton avis sur notre collaboration</title>
+<title>Suna Films Media — Ton avis anonyme</title>
 <style>
   :root{
     --bg:#0a0a0b;
@@ -349,13 +349,7 @@ const WEBHOOK_URL = "";
 /* ---------------- Question model ----------------
    types : stars | single | textarea | text
 --------------------------------------------------- */
-const ALL_QUESTIONS = [
-  {
-    id:"nom", type:"text", onlyIfNoParam:"nom", eyebrow:"Pour commencer",
-    q:"Ton nom ?",
-    sub:"Juste pour savoir de qui vient l'avis — rien n'est publié sans ton accord.",
-    placeholder:"Prénom et nom"
-  },
+const QUESTIONS = [
   {
     id:"note_globale", type:"stars", eyebrow:"01 · L'essentiel",
     q:"Globalement, t'es satisfait de notre collaboration ?",
@@ -408,7 +402,7 @@ const ALL_QUESTIONS = [
     sub:"En quelques phrases — c'est ce qui pourrait devenir ton témoignage. Pense à :",
     hints:["Le résultat concret obtenu","Avant / après","Ce qui t'a surpris","Pourquoi nous plutôt qu'un autre"],
     placeholder:"Ex : en 3 mois, j'ai eu plus de visibilité qu'en 2 ans tout seul. Le tournage était simple, l'équipe savait exactement quoi me faire dire, et j'ai signé 4 mandats qui viennent directement des vidéos…",
-    consent:"Vous pouvez utiliser ce commentaire comme témoignage (avec mon nom)."
+    consent:"Vous pouvez utiliser ce commentaire comme témoignage anonyme."
   },
   {
     id:"amelioration", type:"textarea", optional:true, eyebrow:"07 · Ce qu'on peut améliorer",
@@ -420,11 +414,6 @@ const ALL_QUESTIONS = [
 ];
 
 /* ---------------- State ---------------- */
-const params = {};
-new URLSearchParams(location.search).forEach((v,k)=>{ params[k]=v; });
-
-const QUESTIONS = ALL_QUESTIONS.filter(Q => !(Q.onlyIfNoParam && (params[Q.onlyIfNoParam]||'').trim()));
-
 const answers = {};
 const flags = {};
 let idx = -1; // -1 = intro
@@ -453,14 +442,13 @@ function screenEl(){
 function renderIntro(){
   const s = screenEl();
   s.classList.add('intro');
-  const prenom = (params.nom||params.name||'').trim().split(' ')[0];
   s.innerHTML = `
-    <div class="eyebrow" style="justify-content:center">Satisfaction client · 2 minutes</div>
-    <h1>${prenom?esc(prenom)+', ton avis ':'Ton avis '}<em>nous fait avancer</em></h1>
-    <p class="sub">Sept questions rapides sur notre collaboration. Les bonnes comme les mauvaises réponses nous servent — c'est comme ça qu'on améliore le service.</p>
+    <div class="eyebrow" style="justify-content:center">Satisfaction client · Anonyme</div>
+    <h1>Ton avis <em>nous fait avancer</em></h1>
+    <p class="sub">Sept questions rapides sur notre collaboration. C'est <b style="color:var(--ink)">100 % anonyme</b> — on ne demande ni ton nom ni ton courriel. Dis-nous les vraies affaires.</p>
     <button class="btn btn--primary" id="start">Commencer <span class="arr">→</span></button>
     <div class="meta">
-      <span>${QUESTIONS.length} questions</span><span>~2 min</span><span>100 % confidentiel</span>
+      <span>${QUESTIONS.length} questions</span><span>~2 min</span><span>Anonyme</span>
     </div>`;
   mount(s);
   s.querySelector('#start').addEventListener('click', ()=>go(0));
@@ -643,18 +631,16 @@ function wireQuestion(Q, s){
 function renderFinal(){
   const s = screenEl();
   s.classList.add('final');
-  const nom = (answers.nom || params.nom || params.name || '').trim();
-  const prenom = nom.split(' ')[0];
   const note = answers.note_globale || 0;
   const echo = [1,2,3,4,5].map(n=>STAR_SVG.replace('<svg', `<svg class="${n<=note?'':'off'}"`)).join('');
   const happy = note >= 4;
   s.innerHTML = `
     <div class="starecho">${echo}</div>
     <div class="badge"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 10px var(--accent)"></span> Avis envoyé</div>
-    <h1>Merci${prenom?` <em>${esc(prenom)}</em>`:''} — <em>c'est noté</em></h1>
+    <h1>Merci — <em>c'est noté</em></h1>
     <p>${happy
-      ? `Ça fait plaisir à lire. Ton retour est transmis à toute l'équipe${flags.point_fort_consent?` — et on te recontacte avant de publier quoi que ce soit`:''}.`
-      : `Merci pour ta franchise. Ton retour est transmis à l'équipe et on revient vers toi rapidement pour corriger le tir.`}</p>
+      ? `Ça fait plaisir à lire. Ton retour anonyme est transmis à toute l'équipe${flags.point_fort_consent?` — et ton commentaire pourra servir de témoignage, sans jamais être associé à ton nom`:''}.`
+      : `Merci pour ta franchise. Ton retour anonyme est transmis à l'équipe et on s'en sert directement pour corriger le tir.`}</p>
     <div class="cta-row">
       <span style="color:var(--muted);font-size:13px">Tu peux fermer cette page.</span>
     </div>
@@ -687,10 +673,8 @@ function submitToWebhook(){
 
   const payload = {
     source: "formulaire-satisfaction",
+    anonyme: true,
     submitted_at: new Date().toISOString(),
-    nom: (answers.nom || params.nom || params.name || "").trim(),
-    email: params.email || "",
-    telephone: params.tel || params.telephone || params.phone || "",
     note_globale: g,
     note_contenu: c,
     note_moyenne: moyenne,
@@ -702,8 +686,7 @@ function submitToWebhook(){
     temoignage_autorise: !!flags.point_fort_consent,
     promoteur: g >= 4 && /^Oui/.test(answers.recommandation||""),
     alerte: g <= 3 || /^(Non|Peut-être)$/.test(answers.recommandation||""),
-    url_params: params,
-    page_url: location.href
+    page_url: location.origin + location.pathname
   };
 
   if(!WEBHOOK_URL){ console.info("[Suna] Webhook non configuré — réponses:", payload); return; }

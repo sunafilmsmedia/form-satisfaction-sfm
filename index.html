@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Ton avis anonyme sur notre collaboration — 7 questions, moins de 2 minutes.">
+<meta name="description" content="Ton avis anonyme sur notre collaboration — 8 questions, moins de 2 minutes.">
 <meta name="theme-color" content="#0a0a0b">
 <meta property="og:title" content="Suna Films Media — Ton avis anonyme">
 <meta property="og:description" content="Quelques questions anonymes sur notre collaboration. Moins de 2 minutes.">
@@ -399,7 +399,13 @@ const QUESTIONS = [
     labels:["Très faible","Décevante","Correcte","Très bonne","Exceptionnelle"]
   },
   {
-    id:"valeur", type:"single", eyebrow:"03 · La valeur",
+    id:"note_tournage", type:"stars", eyebrow:"03 · Le tournage",
+    q:"Et le tournage, ça se passe comment ?",
+    sub:"Le jour J : la préparation, l'équipe sur place, le rythme, ton confort devant la caméra.",
+    labels:["Vraiment pénible","Inconfortable","Correct","Agréable","Vraiment le fun"]
+  },
+  {
+    id:"valeur", type:"single", eyebrow:"04 · La valeur",
     q:"Qu'est-ce qui t'a apporté le plus de valeur ?",
     sub:"Un seul choix — celui qui a vraiment fait la différence pour toi.",
     options:[
@@ -411,7 +417,7 @@ const QUESTIONS = [
     ]
   },
   {
-    id:"resultats", type:"single", eyebrow:"04 · Les résultats",
+    id:"resultats", type:"single", eyebrow:"05 · Les résultats",
     q:"Les résultats par rapport à tes attentes ?",
     sub:"On veut la vraie réponse, pas la polie.",
     options:[
@@ -422,7 +428,7 @@ const QUESTIONS = [
     ]
   },
   {
-    id:"recommandation", type:"single", eyebrow:"05 · La recommandation",
+    id:"recommandation", type:"single", eyebrow:"06 · La recommandation",
     q:"Tu nous recommanderais à un autre courtier ?",
     sub:"La question qui compte le plus pour nous.",
     options:[
@@ -433,7 +439,7 @@ const QUESTIONS = [
     ]
   },
   {
-    id:"point_fort", type:"textarea", eyebrow:"06 · Ce qu'on fait bien",
+    id:"point_fort", type:"textarea", eyebrow:"07 · Ce qu'on fait bien",
     q:"Qu'est-ce qu'on a le mieux fait ?",
     sub:"En quelques phrases — c'est ce qui pourrait devenir ton témoignage. Pense à :",
     hints:["Le résultat concret obtenu","Avant / après","Ce qui t'a surpris","Pourquoi nous plutôt qu'un autre"],
@@ -443,7 +449,7 @@ const QUESTIONS = [
     consentNote:"Facultatif. <b>Laisse vide et tout reste anonyme</b> — on utilisera le commentaire sans nom, ou pas du tout, comme tu préfères."
   },
   {
-    id:"amelioration", type:"textarea", optional:true, eyebrow:"07 · Ce qu'on peut améliorer",
+    id:"amelioration", type:"textarea", optional:true, eyebrow:"08 · Ce qu'on peut améliorer",
     q:"Qu'est-ce qu'on pourrait faire mieux ?",
     sub:"Sois franc — c'est exactement là-dessus qu'on travaille. Par exemple :",
     hints:["Les délais de livraison","La communication","Le processus de tournage","Le rapport qualité / prix","Les résultats des pubs"],
@@ -483,7 +489,7 @@ function renderIntro(){
   s.innerHTML = `
     <div class="eyebrow" style="justify-content:center">Satisfaction client · Anonyme</div>
     <h1>Ton avis <em>nous fait avancer</em></h1>
-    <p class="sub">Sept questions rapides sur notre collaboration. C'est <b style="color:var(--ink)">anonyme par défaut</b> — on ne te demande ton nom que si tu acceptes qu'on publie ton commentaire comme témoignage. Dis-nous les vraies affaires.</p>
+    <p class="sub">Huit questions rapides sur notre collaboration. C'est <b style="color:var(--ink)">anonyme par défaut</b> — on ne te demande ton nom que si tu acceptes qu'on publie ton commentaire comme témoignage. Dis-nous les vraies affaires.</p>
     <button class="btn btn--primary" id="start">Commencer <span class="arr">→</span></button>
     <div class="meta">
       <span>${QUESTIONS.length} questions</span><span>~2 min</span><span>Anonyme</span>
@@ -757,7 +763,9 @@ function submitToWebhook(){
 
   const g = answers.note_globale || 0;
   const c = answers.note_contenu || 0;
-  const moyenne = (g && c) ? Math.round(((g+c)/2)*10)/10 : (g||c||0);
+  const t = answers.note_tournage || 0;
+  const notes = [g,c,t].filter(Boolean);
+  const moyenne = notes.length ? Math.round((notes.reduce((a,b)=>a+b,0)/notes.length)*10)/10 : 0;
 
   const signature = flags.point_fort_consent ? (flags.point_fort_nom||"").trim() : "";
 
@@ -767,6 +775,7 @@ function submitToWebhook(){
     submitted_at: new Date().toISOString(),
     note_globale: g,
     note_contenu: c,
+    note_tournage: t,
     note_moyenne: moyenne,
     valeur_principale: answers.valeur || "",
     resultats_vs_attentes: answers.resultats || "",

@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Ton avis sur notre collaboration — 7 questions, moins de 2 minutes.">
+<meta name="theme-color" content="#0a0a0b">
+<meta property="og:title" content="Suna Films Media — Ton avis compte">
+<meta property="og:description" content="Quelques questions rapides sur notre collaboration. Moins de 2 minutes.">
+<meta name="robots" content="noindex">
+<title>Suna Films Media — Ton avis sur notre collaboration</title>
+<style>
+  :root{
+    --bg:#0a0a0b;
+    --surface:#141416;
+    --surface-2:#1c1c1f;
+    --line:#2a2926;
+    --accent:#ec6a23;
+    --accent-hot:#ff8a3d;
+    --ink:#f5f2ee;
+    --muted:#8a857e;
+    --muted-2:#615d57;
+    --radius:999px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --stage-max:640px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* ambient texture behind everything */
+  .ambient{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1200px 700px at 78% -10%, rgba(236,106,35,.16), transparent 60%),
+      radial-gradient(900px 600px at 12% 112%, rgba(236,106,35,.08), transparent 60%),
+      var(--bg);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* progress rail */
+  .rail{
+    position:fixed;top:0;left:0;right:0;height:3px;z-index:40;
+    background:rgba(255,255,255,.06);
+  }
+  .rail__fill{
+    height:100%;width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--accent-hot));
+    box-shadow:0 0 14px rgba(236,106,35,.7);
+    transition:width .7s var(--ease);
+  }
+
+  /* top brand bar */
+  .brandbar{
+    position:fixed;top:0;left:0;right:0;z-index:30;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(18px,5vw,44px);
+    pointer-events:none;
+  }
+  .brand{
+    display:flex;align-items:center;gap:11px;
+    font-weight:800;letter-spacing:.02em;font-size:14px;text-transform:uppercase;
+  }
+  .brand .dot{
+    width:11px;height:11px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 14px var(--accent);
+  }
+  .brand small{color:var(--muted);font-weight:600;letter-spacing:.12em}
+  .stepcount{
+    font-size:12px;letter-spacing:.22em;color:var(--muted);
+    text-transform:uppercase;font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* stage */
+  .stage{
+    position:relative;z-index:10;
+    height:100dvh;width:100%;
+    display:flex;align-items:center;justify-content:center;
+    padding:96px clamp(18px,5vw,44px) 40px;
+  }
+  .screen{
+    width:100%;max-width:var(--stage-max);
+    display:none;
+  }
+  .screen.is-active{display:block;animation:rise .75s var(--ease) both}
+  @keyframes rise{
+    from{opacity:0;transform:translateY(26px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin-bottom:20px;
+  }
+  .eyebrow::before{
+    content:"";width:26px;height:1px;background:var(--accent);opacity:.7;
+  }
+
+  h1.q{
+    font-size:clamp(28px,5.4vw,44px);
+    line-height:1.06;font-weight:800;letter-spacing:-.02em;
+    text-wrap:balance;margin-bottom:14px;
+  }
+  .sub{
+    color:var(--muted);font-size:clamp(14px,2vw,16px);line-height:1.5;
+    max-width:46ch;margin-bottom:30px;
+  }
+
+  /* text inputs */
+  .field{
+    width:100%;background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;padding:16px 18px;color:var(--ink);
+    font:inherit;font-size:16px;transition:border-color .25s var(--ease);
+    resize:none;line-height:1.5;
+  }
+  .field::placeholder{color:var(--muted-2)}
+  .field:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(236,106,35,.12)}
+  textarea.field{min-height:150px}
+  .counter{font-size:12px;color:var(--muted-2);margin-top:9px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* consent checkbox */
+  .consent{
+    display:flex;align-items:flex-start;gap:12px;margin-top:16px;cursor:pointer;
+    color:var(--muted);font-size:13.5px;line-height:1.5;
+  }
+  .consent input{position:absolute;opacity:0;pointer-events:none}
+  .consent .box{
+    flex:none;width:20px;height:20px;border-radius:6px;margin-top:1px;
+    border:1.5px solid var(--muted-2);position:relative;transition:.2s var(--ease);
+  }
+  .consent input:checked + .box{background:var(--accent);border-color:var(--accent)}
+  .consent input:checked + .box::after{
+    content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+    border:solid #0a0a0b;border-width:0 2.5px 2.5px 0;transform:rotate(42deg);
+  }
+  .consent input:focus-visible + .box{box-shadow:0 0 0 4px rgba(236,106,35,.2)}
+
+  /* single-choice options */
+  .opts{display:flex;flex-direction:column;gap:11px}
+  .opt{
+    display:flex;align-items:center;gap:15px;
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:17px 20px;cursor:pointer;color:var(--ink);font-family:inherit;
+    transition:border-color .25s var(--ease),background .25s var(--ease),transform .18s var(--ease);
+    text-align:left;
+  }
+  .opt:hover{border-color:#3d3a34;background:var(--surface-2);transform:translateX(3px)}
+  .opt__mark{
+    flex:none;width:22px;height:22px;border-radius:50%;
+    border:2px solid var(--muted-2);position:relative;transition:.25s var(--ease);
+  }
+  .opt__label{font-size:16px;font-weight:600;line-height:1.35}
+  .opt__label b{font-weight:800}
+  .opt__label span{display:block;font-weight:500;font-size:13.5px;color:var(--muted);margin-top:3px}
+  .opt.sel{border-color:var(--accent);background:rgba(236,106,35,.10)}
+  .opt.sel .opt__mark{border-color:var(--accent);background:var(--accent);box-shadow:0 0 0 4px rgba(236,106,35,.16)}
+  .opt.sel .opt__mark::after{
+    content:"";position:absolute;inset:0;margin:auto;width:8px;height:8px;border-radius:50%;background:#0a0a0b;
+  }
+  .suboptions{margin-top:14px;display:none;animation:rise .4s var(--ease) both}
+  .suboptions.show{display:block}
+
+  /* stars */
+  .stars{
+    display:flex;align-items:center;gap:clamp(6px,2.4vw,14px);
+    margin:6px 0 2px;
+  }
+  .star{
+    all:unset;cursor:pointer;line-height:0;padding:6px;border-radius:14px;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .2s var(--ease);
+  }
+  .star svg{
+    width:clamp(38px,10vw,58px);height:auto;display:block;
+    fill:transparent;stroke:var(--muted-2);stroke-width:1.6;
+    transition:fill .2s var(--ease),stroke .2s var(--ease),filter .25s var(--ease);
+  }
+  .star:hover{transform:scale(1.08)}
+  .star:focus-visible{box-shadow:0 0 0 3px rgba(236,106,35,.5)}
+  .star.on svg{
+    fill:var(--accent);stroke:var(--accent);
+    filter:drop-shadow(0 4px 16px rgba(236,106,35,.45));
+  }
+  .star.locked{animation:pop .38s var(--ease) both}
+  @keyframes pop{
+    0%{transform:scale(1)}45%{transform:scale(1.22)}100%{transform:scale(1)}
+  }
+  .starlabel{
+    margin-top:14px;font-size:14px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted-2);min-height:20px;
+    transition:color .2s var(--ease);
+  }
+  .starlabel.set{color:var(--accent)}
+  .starscale{
+    display:flex;justify-content:space-between;max-width:min(100%,340px);
+    margin-top:4px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted-2);font-weight:700;
+  }
+
+  /* example prompts list */
+  .exlist{
+    display:flex;flex-wrap:wrap;gap:8px;margin:-14px 0 22px;
+  }
+  .exlist .ex{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:7px 14px;font-size:13px;font-weight:600;color:var(--muted);
+  }
+  .exlist .ex::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
+
+  /* nav */
+  .nav{display:flex;align-items:center;gap:14px;margin-top:32px}
+  .btn{
+    all:unset;cursor:pointer;border-radius:var(--radius);
+    font-weight:800;letter-spacing:.02em;text-align:center;
+    transition:transform .18s var(--ease),box-shadow .25s var(--ease),background .25s var(--ease),opacity .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn--primary{
+    background:var(--accent);color:#0a0a0b;padding:16px 34px;font-size:15px;
+    display:inline-flex;align-items:center;gap:10px;
+    box-shadow:0 10px 30px -8px rgba(236,106,35,.6);
+  }
+  .btn--primary:hover{transform:translateY(-2px);box-shadow:0 16px 40px -8px rgba(236,106,35,.75);background:var(--accent-hot)}
+  .btn--primary:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn--primary .arr{transition:transform .25s var(--ease)}
+  .btn--primary:not(:disabled):hover .arr{transform:translateX(4px)}
+  .btn--ghost{
+    color:var(--muted);padding:14px 18px;font-size:13px;font-weight:700;
+    letter-spacing:.06em;text-transform:uppercase;
+  }
+  .btn--ghost:hover{color:var(--ink)}
+  .enterhint{margin-left:auto;font-size:12px;color:var(--muted-2);letter-spacing:.02em}
+  .enterhint b{color:var(--muted);font-weight:700}
+
+  /* intro */
+  .intro{text-align:center;max-width:560px}
+  .intro h1{
+    font-size:clamp(38px,8vw,72px);line-height:.98;font-weight:800;letter-spacing:-.03em;
+    text-transform:uppercase;text-wrap:balance;margin-bottom:22px;
+  }
+  .intro h1 em{font-style:normal;color:var(--accent);display:inline-block}
+  .intro .sub{margin:0 auto 34px;font-size:clamp(15px,2.2vw,18px);max-width:40ch}
+  .intro .meta{
+    display:flex;gap:26px;justify-content:center;margin-top:36px;flex-wrap:wrap;
+    color:var(--muted);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;
+  }
+  .intro .meta span{display:inline-flex;align-items:center;gap:8px}
+  .intro .meta span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+  /* final */
+  .final{text-align:center;max-width:600px}
+  .final .badge{
+    display:inline-flex;align-items:center;gap:9px;margin-bottom:26px;
+    border:1px solid rgba(236,106,35,.4);border-radius:var(--radius);
+    padding:9px 18px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    font-weight:700;color:var(--accent);
+  }
+  .final h1{
+    font-size:clamp(30px,6vw,52px);line-height:1.02;font-weight:800;
+    letter-spacing:-.02em;text-transform:uppercase;text-wrap:balance;margin-bottom:22px;
+  }
+  .final h1 em{font-style:normal;color:var(--accent)}
+  .final p{color:var(--muted);font-size:clamp(15px,2.2vw,17px);line-height:1.6;max-width:48ch;margin:0 auto 18px}
+  .final p b{color:var(--ink);font-weight:700}
+  .final .cta-row{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:34px}
+  .final .btn--primary{padding:19px 40px;font-size:16px}
+  .final .starecho{display:flex;justify-content:center;gap:8px;margin-bottom:24px}
+  .final .starecho svg{width:26px;height:auto;fill:var(--accent);stroke:var(--accent);stroke-width:1.4}
+  .final .starecho svg.off{fill:transparent;stroke:var(--muted-2)}
+  .recap{
+    margin:30px auto 0;max-width:440px;text-align:left;
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 22px;
+  }
+  .recap details{border-bottom:1px solid var(--line)}
+  .recap details:last-child{border-bottom:none}
+  .recap summary{
+    cursor:pointer;list-style:none;padding:15px 0;font-weight:700;font-size:13px;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .recap summary::-webkit-details-marker{display:none}
+  .recap .rc-item{padding:2px 0 16px;font-size:14px;color:var(--muted);line-height:1.6}
+  .recap .rc-item .qh{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
+
+  /* STORM overlay */
+  #storm{
+    position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0;
+    transition:opacity .35s linear;
+  }
+  #storm.on{opacity:1}
+  .flash{
+    position:fixed;inset:0;z-index:61;pointer-events:none;opacity:0;
+    background:radial-gradient(circle at 50% 40%, rgba(255,170,90,.9), rgba(236,106,35,.3) 45%, transparent 70%);
+    mix-blend-mode:screen;
+  }
+
+  @media (max-width:560px){
+    .stage{padding-top:86px}
+    .enterhint{display:none}
+    .brand small{display:none}
+    .stars{gap:4px}
+    .star{padding:3px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .screen.is-active{animation:none}
+    .btn--primary:hover{transform:none}
+    .star.locked{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="grain"></div>
+<canvas id="storm"></canvas>
+<div class="flash" id="flash"></div>
+
+<div class="rail"><div class="rail__fill" id="rail"></div></div>
+
+<header class="brandbar">
+  <div class="brand"><span class="dot"></span>SUNA FILMS MEDIA <small>· Satisfaction</small></div>
+  <div class="stepcount" id="stepcount"></div>
+</header>
+
+<main class="stage" id="stage"></main>
+
+<script>
+/* ============================================================
+   WEBHOOK — colle ici l'URL de ton webhook (Make.com / Zapier).
+   Les réponses y sont envoyées en JSON à la fin du formulaire.
+   Laisse "" pour désactiver l'envoi (les réponses sortent en console).
+   ============================================================ */
+const WEBHOOK_URL = "";
+
+/* ---------------- Question model ----------------
+   types : stars | single | textarea | text
+--------------------------------------------------- */
+const ALL_QUESTIONS = [
+  {
+    id:"nom", type:"text", onlyIfNoParam:"nom", eyebrow:"Pour commencer",
+    q:"Ton nom ?",
+    sub:"Juste pour savoir de qui vient l'avis — rien n'est publié sans ton accord.",
+    placeholder:"Prénom et nom"
+  },
+  {
+    id:"note_globale", type:"stars", eyebrow:"01 · L'essentiel",
+    q:"Globalement, t'es satisfait de notre collaboration ?",
+    sub:"Ta note générale sur l'expérience avec Suna Films Media.",
+    labels:["Très insatisfait","Insatisfait","Correct","Satisfait","Excellent"]
+  },
+  {
+    id:"note_contenu", type:"stars", eyebrow:"02 · Le livrable",
+    q:"Et la qualité du contenu livré ?",
+    sub:"Les vidéos, le montage, le rendu final — la job de production elle-même.",
+    labels:["Très faible","Décevante","Correcte","Très bonne","Exceptionnelle"]
+  },
+  {
+    id:"valeur", type:"single", eyebrow:"03 · La valeur",
+    q:"Qu'est-ce qui t'a apporté le plus de valeur ?",
+    sub:"Un seul choix — celui qui a vraiment fait la différence pour toi.",
+    options:[
+      {v:"La qualité des vidéos", d:"Le contenu lui-même, le rendu, l'image de marque"},
+      {v:"Les résultats des pubs Meta", d:"Les leads, les appels, le retour sur investissement"},
+      {v:"La stratégie et les idées", d:"Le plan de contenu, les angles, la direction"},
+      {v:"L'accompagnement et le suivi", d:"La communication, la réactivité, l'humain"},
+      {v:"Autre", other:true, placeholder:"Dis-nous ce qui a fait la différence…"}
+    ]
+  },
+  {
+    id:"resultats", type:"single", eyebrow:"04 · Les résultats",
+    q:"Les résultats par rapport à tes attentes ?",
+    sub:"On veut la vraie réponse, pas la polie.",
+    options:[
+      {v:"Au-delà de mes attentes", d:"Ça a dépassé ce que j'imaginais"},
+      {v:"Conformes à mes attentes", d:"C'est ce à quoi je m'attendais"},
+      {v:"En dessous de mes attentes", d:"J'espérais plus"},
+      {v:"Encore trop tôt pour juger", d:"Ça vient de commencer"}
+    ]
+  },
+  {
+    id:"recommandation", type:"single", eyebrow:"05 · La recommandation",
+    q:"Tu nous recommanderais à un autre courtier ?",
+    sub:"La question qui compte le plus pour nous.",
+    options:[
+      {v:"Oui, sans hésiter", d:"Je le fais déjà ou je le ferais demain matin"},
+      {v:"Oui, probablement", d:"Dans le bon contexte, oui"},
+      {v:"Peut-être", d:"J'aurais des réserves à mentionner"},
+      {v:"Non", d:"Pas dans l'état actuel des choses"}
+    ]
+  },
+  {
+    id:"point_fort", type:"textarea", eyebrow:"06 · Ce qu'on fait bien",
+    q:"Qu'est-ce qu'on a le mieux fait ?",
+    sub:"En quelques phrases — c'est ce qui pourrait devenir ton témoignage. Pense à :",
+    hints:["Le résultat concret obtenu","Avant / après","Ce qui t'a surpris","Pourquoi nous plutôt qu'un autre"],
+    placeholder:"Ex : en 3 mois, j'ai eu plus de visibilité qu'en 2 ans tout seul. Le tournage était simple, l'équipe savait exactement quoi me faire dire, et j'ai signé 4 mandats qui viennent directement des vidéos…",
+    consent:"Vous pouvez utiliser ce commentaire comme témoignage (avec mon nom)."
+  },
+  {
+    id:"amelioration", type:"textarea", optional:true, eyebrow:"07 · Ce qu'on peut améliorer",
+    q:"Qu'est-ce qu'on pourrait faire mieux ?",
+    sub:"Sois franc — c'est exactement là-dessus qu'on travaille. Par exemple :",
+    hints:["Les délais de livraison","La communication","Le processus de tournage","Le rapport qualité / prix","Les résultats des pubs"],
+    placeholder:"Ex : les délais entre le tournage et la livraison étaient parfois longs, et j'aurais aimé un point de suivi mensuel sur les chiffres des pubs…"
+  }
+];
+
+/* ---------------- State ---------------- */
+const params = {};
+new URLSearchParams(location.search).forEach((v,k)=>{ params[k]=v; });
+
+const QUESTIONS = ALL_QUESTIONS.filter(Q => !(Q.onlyIfNoParam && (params[Q.onlyIfNoParam]||'').trim()));
+
+const answers = {};
+const flags = {};
+let idx = -1; // -1 = intro
+let locked = false;
+const stage = document.getElementById('stage');
+const rail = document.getElementById('rail');
+const stepcount = document.getElementById('stepcount');
+
+const STAR_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 5.9 6.5.95-4.7 4.58 1.11 6.47L12 17.45 6.19 20.5 7.3 14.03 2.6 9.45l6.5-.95L12 2.6z" stroke-linejoin="round"/></svg>';
+
+/* ---------------- Render ---------------- */
+function updateChrome(){
+  if(idx < 0){ rail.style.width='0%'; stepcount.textContent=''; return; }
+  if(idx >= QUESTIONS.length){ rail.style.width='100%'; stepcount.textContent='Terminé'; return; }
+  const pct = (idx/(QUESTIONS.length)) * 100;
+  rail.style.width = pct + '%';
+  stepcount.textContent = `${String(idx+1).padStart(2,'0')} / ${String(QUESTIONS.length).padStart(2,'0')}`;
+}
+
+function screenEl(){
+  const s = document.createElement('section');
+  s.className='screen is-active';
+  return s;
+}
+
+function renderIntro(){
+  const s = screenEl();
+  s.classList.add('intro');
+  const prenom = (params.nom||params.name||'').trim().split(' ')[0];
+  s.innerHTML = `
+    <div class="eyebrow" style="justify-content:center">Satisfaction client · 2 minutes</div>
+    <h1>${prenom?esc(prenom)+', ton avis ':'Ton avis '}<em>nous fait avancer</em></h1>
+    <p class="sub">Sept questions rapides sur notre collaboration. Les bonnes comme les mauvaises réponses nous servent — c'est comme ça qu'on améliore le service.</p>
+    <button class="btn btn--primary" id="start">Commencer <span class="arr">→</span></button>
+    <div class="meta">
+      <span>${QUESTIONS.length} questions</span><span>~2 min</span><span>100 % confidentiel</span>
+    </div>`;
+  mount(s);
+  s.querySelector('#start').addEventListener('click', ()=>go(0));
+}
+
+function renderQuestion(){
+  const Q = QUESTIONS[idx];
+  const s = screenEl();
+  let body = '';
+
+  if(Q.type === 'stars'){
+    body = `<div class="stars" id="stars" role="radiogroup" aria-label="${esc(Q.q)}" tabindex="0">` +
+      [1,2,3,4,5].map(n=>
+        `<button class="star" data-v="${n}" role="radio" aria-checked="false" aria-label="${n} étoile${n>1?'s':''} sur 5">${STAR_SVG}</button>`
+      ).join('') + `</div>
+      <div class="starscale"><span>1 · ${esc(Q.labels[0])}</span><span>5 · ${esc(Q.labels[4])}</span></div>
+      <div class="starlabel" id="starlabel">Choisis une note</div>`;
+  }
+  else if(Q.type === 'single'){
+    body = `<div class="opts" role="radiogroup">` + Q.options.map((o,i)=>
+      `<button class="opt" data-i="${i}" data-v="${esc(o.v)}" role="radio" aria-checked="false">
+        <span class="opt__mark"></span>
+        <span class="opt__label"><b>${esc(o.v)}</b>${o.d?`<span>${esc(o.d)}</span>`:''}</span>
+      </button>`).join('') + `</div>`;
+    const op = Q.options.find(o=>o.other);
+    if(op){
+      body += `<div class="suboptions" id="subwrap">
+        <input class="field" id="otherInput" placeholder="${esc(op.placeholder||'Précise…')}" maxlength="90"/>
+      </div>`;
+    }
+  }
+  else if(Q.type === 'text'){
+    body = `<input class="field" id="textInput" placeholder="${esc(Q.placeholder)}" autocomplete="name" maxlength="90"/>`;
+  }
+  else if(Q.type === 'textarea'){
+    body = `<textarea class="field" id="textInput" placeholder="${esc(Q.placeholder)}" maxlength="1200"></textarea>
+      <div class="counter"><span id="cnt">0</span> / 1200</div>`;
+    if(Q.consent){
+      body += `<label class="consent"><input type="checkbox" id="consentBox"><span class="box"></span><span>${esc(Q.consent)}</span></label>`;
+    }
+  }
+
+  const hintsHtml = (Q.hints && Q.hints.length)
+    ? `<div class="exlist">${Q.hints.map(h=>`<span class="ex">${esc(h)}</span>`).join('')}</div>`
+    : '';
+
+  const isLast = idx>=QUESTIONS.length-1;
+  s.innerHTML = `
+    <div class="eyebrow">${esc(Q.eyebrow)}</div>
+    <h1 class="q">${esc(Q.q)}</h1>
+    ${Q.sub?`<p class="sub">${esc(Q.sub)}</p>`:''}
+    ${hintsHtml}
+    ${body}
+    <div class="nav">
+      ${idx>0?`<button class="btn btn--ghost" id="back">← Retour</button>`:''}
+      <button class="btn btn--primary" id="next" disabled>${isLast?'Envoyer':'Suivant'} <span class="arr">→</span></button>
+      <span class="enterhint">${Q.type==='textarea'?'Ctrl + Entrée <b>↵</b>':'Entrée <b>↵</b>'}</span>
+    </div>`;
+  mount(s);
+  wireQuestion(Q, s);
+}
+
+let advanceTimer = null;
+function wireQuestion(Q, s){
+  const next = s.querySelector('#next');
+  const back = s.querySelector('#back');
+  if(back) back.addEventListener('click', ()=>go(idx-1));
+  const setEnabled = (on)=> next.disabled = !on;
+  next.addEventListener('click', ()=>{ if(!next.disabled) go(idx+1); });
+
+  /* ---- étoiles ---- */
+  if(Q.type === 'stars'){
+    const wrap = s.querySelector('#stars');
+    const stars = [...wrap.querySelectorAll('.star')];
+    const label = s.querySelector('#starlabel');
+    const paint = (n, preview)=>{
+      stars.forEach(b=> b.classList.toggle('on', +b.dataset.v <= n));
+      label.textContent = n ? `${n}/5 · ${Q.labels[n-1]}` : 'Choisis une note';
+      label.classList.toggle('set', !!n && !preview);
+    };
+    const commit = (n, auto)=>{
+      if(advanceTimer){ clearTimeout(advanceTimer); advanceTimer=null; }
+      answers[Q.id] = n;
+      stars.forEach(b=>{
+        b.setAttribute('aria-checked', String(+b.dataset.v === n));
+        b.classList.remove('locked');
+      });
+      stars[n-1].classList.add('locked');
+      paint(n);
+      setEnabled(true);
+      if(auto) advanceTimer = setTimeout(()=>{ advanceTimer=null; go(idx+1); }, 520);
+    };
+    stars.forEach(b=>{
+      const n = +b.dataset.v;
+      b.addEventListener('mouseenter', ()=> paint(n, true));
+      b.addEventListener('click', ()=> commit(n, true));
+    });
+    wrap.addEventListener('mouseleave', ()=> paint(answers[Q.id]||0));
+    wrap.addEventListener('keydown', e=>{
+      const cur = answers[Q.id]||0;
+      if(e.key==='ArrowRight'||e.key==='ArrowUp'){ e.preventDefault(); commit(Math.min(5,cur+1), false); }
+      if(e.key==='ArrowLeft'||e.key==='ArrowDown'){ e.preventDefault(); commit(Math.max(1,cur-1), false); }
+      if((e.key>='1'&&e.key<='5')){ e.preventDefault(); commit(+e.key, false); }
+      if(e.key==='Enter' && !next.disabled){ e.preventDefault(); go(idx+1); }
+    });
+    if(answers[Q.id]) commit(answers[Q.id], false); else paint(0);
+    setTimeout(()=>wrap.focus({preventScroll:true}), 200);
+    return;
+  }
+
+  /* ---- choix unique ---- */
+  if(Q.type === 'single'){
+    const opts = [...s.querySelectorAll('.opt')];
+    const subwrap = s.querySelector('#subwrap');
+    const otherInput = s.querySelector('#otherInput');
+    let otherSel = false;
+    const saved = answers[Q.id];
+    if(saved){
+      const match = opts.find(b=>b.dataset.v===saved && !Q.options[+b.dataset.i].other);
+      if(match){ match.classList.add('sel'); match.setAttribute('aria-checked','true'); setEnabled(true); }
+      else if(otherInput){
+        const other = opts.find(b=>Q.options[+b.dataset.i].other);
+        other.classList.add('sel'); other.setAttribute('aria-checked','true');
+        otherSel = true; subwrap.classList.add('show'); otherInput.value = saved; setEnabled(saved.length>0);
+      }
+    }
+    const revalidate = ()=> setEnabled(otherSel ? otherInput.value.trim().length>0 : !!answers[Q.id]);
+    opts.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        if(advanceTimer){ clearTimeout(advanceTimer); advanceTimer=null; }
+        opts.forEach(x=>{x.classList.remove('sel');x.setAttribute('aria-checked','false');});
+        b.classList.add('sel'); b.setAttribute('aria-checked','true');
+        const o = Q.options[+b.dataset.i];
+        otherSel = !!o.other;
+        if(otherSel){
+          answers[Q.id] = otherInput ? otherInput.value.trim() : '';
+          if(subwrap){ subwrap.classList.add('show'); setTimeout(()=>otherInput.focus(),120); }
+        } else {
+          answers[Q.id] = o.v;
+          if(subwrap) subwrap.classList.remove('show');
+          revalidate();
+          advanceTimer = setTimeout(()=>{ advanceTimer=null; go(idx+1); }, 420);
+          return;
+        }
+        revalidate();
+      });
+    });
+    if(otherInput){
+      otherInput.addEventListener('input', ()=>{ if(otherSel){ answers[Q.id]=otherInput.value.trim(); revalidate(); } });
+      otherInput.addEventListener('keydown', e=>{ if(e.key==='Enter' && !next.disabled){ e.preventDefault(); go(idx+1); } });
+    }
+    return;
+  }
+
+  /* ---- texte / développement ---- */
+  const input = s.querySelector('#textInput');
+  const cnt = s.querySelector('#cnt');
+  const consentBox = s.querySelector('#consentBox');
+  if(consentBox){
+    consentBox.checked = !!flags[Q.id+'_consent'];
+    consentBox.addEventListener('change', ()=>{ flags[Q.id+'_consent'] = consentBox.checked; });
+  }
+  input.value = answers[Q.id] || '';
+  const minLen = Q.optional ? 0 : (Q.type==='textarea' ? 10 : 2);
+  const check = ()=>{
+    answers[Q.id]=input.value.trim();
+    if(cnt) cnt.textContent = input.value.length;
+    setEnabled(input.value.trim().length>=minLen);
+  };
+  input.addEventListener('input', check);
+  input.addEventListener('keydown', e=>{
+    const ok = Q.type==='text' ? e.key==='Enter' : (e.key==='Enter' && (e.metaKey || e.ctrlKey));
+    if(ok && !next.disabled){ e.preventDefault(); go(idx+1); }
+  });
+  check();
+  setTimeout(()=>input.focus(),200);
+}
+
+/* ---------------- Final ---------------- */
+function renderFinal(){
+  const s = screenEl();
+  s.classList.add('final');
+  const nom = (answers.nom || params.nom || params.name || '').trim();
+  const prenom = nom.split(' ')[0];
+  const note = answers.note_globale || 0;
+  const echo = [1,2,3,4,5].map(n=>STAR_SVG.replace('<svg', `<svg class="${n<=note?'':'off'}"`)).join('');
+  const happy = note >= 4;
+  s.innerHTML = `
+    <div class="starecho">${echo}</div>
+    <div class="badge"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 10px var(--accent)"></span> Avis envoyé</div>
+    <h1>Merci${prenom?` <em>${esc(prenom)}</em>`:''} — <em>c'est noté</em></h1>
+    <p>${happy
+      ? `Ça fait plaisir à lire. Ton retour est transmis à toute l'équipe${flags.point_fort_consent?` — et on te recontacte avant de publier quoi que ce soit`:''}.`
+      : `Merci pour ta franchise. Ton retour est transmis à l'équipe et on revient vers toi rapidement pour corriger le tir.`}</p>
+    <div class="cta-row">
+      <span style="color:var(--muted);font-size:13px">Tu peux fermer cette page.</span>
+    </div>
+    ${renderRecap()}`;
+  mount(s);
+  stepcount.textContent='Terminé';
+  submitToWebhook();
+}
+
+function renderRecap(){
+  const rows = QUESTIONS.map(Q=>{
+    let val = answers[Q.id];
+    if(Q.type==='stars') val = val ? `${val}/5 · ${Q.labels[val-1]}` : '—';
+    if(!val) val = '—';
+    return `<div class="rc-item"><span class="qh">${esc(shorten(Q.q))}</span>${esc(val)}</div>`;
+  }).join('');
+  return `<div class="recap"><details><summary>Récapitulatif de tes réponses <span style="color:var(--muted-2)">▾</span></summary>${rows}</details></div>`;
+}
+function shorten(q){ return q.length>52 ? q.slice(0,50)+'…' : q; }
+
+/* ---------------- Webhook submission ---------------- */
+let submitted = false;
+function submitToWebhook(){
+  if(submitted) return;
+  submitted = true;
+
+  const g = answers.note_globale || 0;
+  const c = answers.note_contenu || 0;
+  const moyenne = (g && c) ? Math.round(((g+c)/2)*10)/10 : (g||c||0);
+
+  const payload = {
+    source: "formulaire-satisfaction",
+    submitted_at: new Date().toISOString(),
+    nom: (answers.nom || params.nom || params.name || "").trim(),
+    email: params.email || "",
+    telephone: params.tel || params.telephone || params.phone || "",
+    note_globale: g,
+    note_contenu: c,
+    note_moyenne: moyenne,
+    valeur_principale: answers.valeur || "",
+    resultats_vs_attentes: answers.resultats || "",
+    recommandation: answers.recommandation || "",
+    point_fort: answers.point_fort || "",
+    amelioration: answers.amelioration || "",
+    temoignage_autorise: !!flags.point_fort_consent,
+    promoteur: g >= 4 && /^Oui/.test(answers.recommandation||""),
+    alerte: g <= 3 || /^(Non|Peut-être)$/.test(answers.recommandation||""),
+    url_params: params,
+    page_url: location.href
+  };
+
+  if(!WEBHOOK_URL){ console.info("[Suna] Webhook non configuré — réponses:", payload); return; }
+  const form = new URLSearchParams();
+  Object.entries(payload).forEach(([k,v])=>{
+    form.append(k, (v!==null && typeof v==='object') ? JSON.stringify(v) : (v==null?'':String(v)));
+  });
+  fetch(WEBHOOK_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/x-www-form-urlencoded" },
+    body: form.toString(),
+    keepalive:true
+  }).catch(err=>console.warn("[Suna] Échec envoi webhook:", err));
+}
+
+/* ---------------- Navigation + STORM ---------------- */
+function mount(el){ stage.innerHTML=''; stage.appendChild(el); }
+
+function go(target){
+  if(locked) return;
+  locked = true;
+  const forward = target > idx;
+  triggerStorm(forward, ()=>{
+    idx = target;
+    updateChrome();
+    if(idx < 0) renderIntro();
+    else if(idx >= QUESTIONS.length) renderFinal();
+    else renderQuestion();
+  }, ()=>{ locked=false; });
+}
+
+/* ---- storm canvas engine ---- */
+const canvas = document.getElementById('storm');
+const ctx = canvas.getContext('2d');
+const flash = document.getElementById('flash');
+let W,H;
+function resize(){ W=canvas.width=innerWidth*devicePixelRatio; H=canvas.height=innerHeight*devicePixelRatio; }
+resize(); addEventListener('resize', resize);
+
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+function triggerStorm(forward, onCover, onDone){
+  if(reduce){
+    canvas.classList.add('on');
+    setTimeout(()=>{ onCover(); setTimeout(()=>{canvas.classList.remove('on'); onDone();},220); },180);
+    return;
+  }
+  const dir = forward ? 1 : -1;
+  const particles = [];
+  const N = Math.min(220, Math.floor(innerWidth/6));
+  for(let i=0;i<N;i++){
+    particles.push({
+      x: Math.random()*W,
+      y: Math.random()*H,
+      len: (18+Math.random()*70)*devicePixelRatio,
+      spd: (10+Math.random()*26)*devicePixelRatio,
+      w: (0.6+Math.random()*2.4)*devicePixelRatio,
+      hue: 18 + Math.random()*22,
+      a: .35+Math.random()*.6
+    });
+  }
+  canvas.classList.add('on');
+  const start = performance.now();
+  const DUR = 900;
+  let swapped=false, bolted=false;
+
+  function frame(now){
+    const t = (now-start)/DUR; // 0..1
+    ctx.clearRect(0,0,W,H);
+    const cover = Math.min(1, t*1.8);
+    const grad = ctx.createLinearGradient(0,0,W,H);
+    grad.addColorStop(0, `rgba(8,8,9,${0.0+cover*0.96})`);
+    grad.addColorStop(.5, `rgba(20,10,4,${cover*0.98})`);
+    grad.addColorStop(1, `rgba(8,8,9,${0.0+cover*0.96})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.globalCompositeOperation='lighter';
+    const wind = dir* (0.9+Math.sin(t*Math.PI)*1.5);
+    for(const p of particles){
+      p.x += p.spd*wind*1.6;
+      p.y += p.spd*0.35;
+      if(p.x>W+80){p.x=-80;} if(p.x< -80){p.x=W+80;}
+      if(p.y>H+40){p.y=-40;}
+      const fade = Math.sin(t*Math.PI);
+      ctx.strokeStyle = `hsla(${p.hue},95%,${52+p.hue}%,${p.a*fade})`;
+      ctx.lineWidth = p.w;
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+      ctx.lineTo(p.x - p.len*wind, p.y - p.len*0.35);
+      ctx.stroke();
+    }
+    ctx.globalCompositeOperation='source-over';
+
+    if(!bolted && t>0.34){ bolted=true; doFlash(); }
+    if(!swapped && t>=0.48){ swapped=true; onCover(); }
+
+    if(t<1){ requestAnimationFrame(frame); }
+    else {
+      canvas.classList.remove('on');
+      setTimeout(()=>{ ctx.clearRect(0,0,W,H); onDone(); }, 360);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function doFlash(){
+  flash.style.transition='none';
+  flash.style.opacity='0.9';
+  requestAnimationFrame(()=>{
+    flash.style.transition='opacity .5s ease-out';
+    flash.style.opacity='0';
+  });
+  setTimeout(()=>{
+    flash.style.transition='none'; flash.style.opacity='0.5';
+    requestAnimationFrame(()=>{ flash.style.transition='opacity .35s ease-out'; flash.style.opacity='0'; });
+  },120);
+}
+
+/* keyboard: global Enter on intro */
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    if(idx<0){ const b=document.getElementById('start'); if(b){e.preventDefault();go(0);} }
+  }
+});
+
+/* boot */
+updateChrome();
+renderIntro();
+
+function esc(str){ return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+
+</body>
+</html>

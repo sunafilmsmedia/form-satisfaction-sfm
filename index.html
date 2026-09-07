@@ -147,6 +147,10 @@
     border:solid #0a0a0b;border-width:0 2.5px 2.5px 0;transform:rotate(42deg);
   }
   .consent input:focus-visible + .box{box-shadow:0 0 0 4px rgba(236,106,35,.2)}
+  .microcopy{
+    margin-top:9px;font-size:12.5px;line-height:1.5;color:var(--muted-2);
+  }
+  .microcopy b{color:var(--muted);font-weight:700}
 
   /* single-choice options */
   .opts{display:flex;flex-direction:column;gap:11px}
@@ -402,7 +406,9 @@ const QUESTIONS = [
     sub:"En quelques phrases — c'est ce qui pourrait devenir ton témoignage. Pense à :",
     hints:["Le résultat concret obtenu","Avant / après","Ce qui t'a surpris","Pourquoi nous plutôt qu'un autre"],
     placeholder:"Ex : en 3 mois, j'ai eu plus de visibilité qu'en 2 ans tout seul. Le tournage était simple, l'équipe savait exactement quoi me faire dire, et j'ai signé 4 mandats qui viennent directement des vidéos…",
-    consent:"Vous pouvez utiliser ce commentaire comme témoignage anonyme."
+    consent:"Vous pouvez utiliser ce commentaire comme témoignage.",
+    consentName:"Prénom et nom — pour signer le témoignage",
+    consentNote:"Facultatif. <b>Laisse vide et tout reste anonyme</b> — on utilisera le commentaire sans nom, ou pas du tout, comme tu préfères."
   },
   {
     id:"amelioration", type:"textarea", optional:true, eyebrow:"07 · Ce qu'on peut améliorer",
@@ -445,7 +451,7 @@ function renderIntro(){
   s.innerHTML = `
     <div class="eyebrow" style="justify-content:center">Satisfaction client · Anonyme</div>
     <h1>Ton avis <em>nous fait avancer</em></h1>
-    <p class="sub">Sept questions rapides sur notre collaboration. C'est <b style="color:var(--ink)">100 % anonyme</b> — on ne demande ni ton nom ni ton courriel. Dis-nous les vraies affaires.</p>
+    <p class="sub">Sept questions rapides sur notre collaboration. C'est <b style="color:var(--ink)">anonyme par défaut</b> — on ne te demande ton nom que si tu acceptes qu'on publie ton commentaire comme témoignage. Dis-nous les vraies affaires.</p>
     <button class="btn btn--primary" id="start">Commencer <span class="arr">→</span></button>
     <div class="meta">
       <span>${QUESTIONS.length} questions</span><span>~2 min</span><span>Anonyme</span>
@@ -488,6 +494,12 @@ function renderQuestion(){
       <div class="counter"><span id="cnt">0</span> / 1200</div>`;
     if(Q.consent){
       body += `<label class="consent"><input type="checkbox" id="consentBox"><span class="box"></span><span>${esc(Q.consent)}</span></label>`;
+      if(Q.consentName){
+        body += `<div class="suboptions" id="nameWrap">
+          <input class="field" id="nameInput" placeholder="${esc(Q.consentName)}" autocomplete="name" maxlength="90"/>
+          <p class="microcopy">${Q.consentNote||''}</p>
+        </div>`;
+      }
     }
   }
 
@@ -607,9 +619,24 @@ function wireQuestion(Q, s){
   const input = s.querySelector('#textInput');
   const cnt = s.querySelector('#cnt');
   const consentBox = s.querySelector('#consentBox');
+  const nameWrap = s.querySelector('#nameWrap');
+  const nameInput = s.querySelector('#nameInput');
   if(consentBox){
     consentBox.checked = !!flags[Q.id+'_consent'];
-    consentBox.addEventListener('change', ()=>{ flags[Q.id+'_consent'] = consentBox.checked; });
+    if(nameInput) nameInput.value = flags[Q.id+'_nom'] || '';
+    const syncConsent = (focus)=>{
+      flags[Q.id+'_consent'] = consentBox.checked;
+      if(nameWrap){
+        nameWrap.classList.toggle('show', consentBox.checked);
+        if(consentBox.checked && focus) setTimeout(()=>nameInput.focus(),140);
+      }
+    };
+    consentBox.addEventListener('change', ()=>syncConsent(true));
+    syncConsent(false);
+  }
+  if(nameInput){
+    nameInput.addEventListener('input', ()=>{ flags[Q.id+'_nom'] = nameInput.value.trim(); });
+    nameInput.addEventListener('keydown', e=>{ if(e.key==='Enter' && !next.disabled){ e.preventDefault(); go(idx+1); } });
   }
   input.value = answers[Q.id] || '';
   const minLen = Q.optional ? 0 : (Q.type==='textarea' ? 10 : 2);
@@ -634,13 +661,18 @@ function renderFinal(){
   const note = answers.note_globale || 0;
   const echo = [1,2,3,4,5].map(n=>STAR_SVG.replace('<svg', `<svg class="${n<=note?'':'off'}"`)).join('');
   const happy = note >= 4;
+  const signature = flags.point_fort_consent ? (flags.point_fort_nom||'').trim() : '';
   s.innerHTML = `
     <div class="starecho">${echo}</div>
     <div class="badge"><span style="width:7px;height:7px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:0 0 10px var(--accent)"></span> Avis envoyé</div>
     <h1>Merci — <em>c'est noté</em></h1>
     <p>${happy
-      ? `Ça fait plaisir à lire. Ton retour anonyme est transmis à toute l'équipe${flags.point_fort_consent?` — et ton commentaire pourra servir de témoignage, sans jamais être associé à ton nom`:''}.`
-      : `Merci pour ta franchise. Ton retour anonyme est transmis à l'équipe et on s'en sert directement pour corriger le tir.`}</p>
+      ? `Ça fait plaisir à lire. Ton retour est transmis à toute l'équipe${flags.point_fort_consent
+          ? (signature
+              ? ` — et ton commentaire pourra être publié comme témoignage signé <b>${esc(signature)}</b>`
+              : ` — et ton commentaire pourra servir de témoignage, sans jamais être associé à un nom`)
+          : `, de façon totalement anonyme`}.`
+      : `Merci pour ta franchise. Ton retour est transmis à l'équipe et on s'en sert directement pour corriger le tir.`}</p>
     <div class="cta-row">
       <span style="color:var(--muted);font-size:13px">Tu peux fermer cette page.</span>
     </div>
@@ -671,9 +703,11 @@ function submitToWebhook(){
   const c = answers.note_contenu || 0;
   const moyenne = (g && c) ? Math.round(((g+c)/2)*10)/10 : (g||c||0);
 
+  const signature = flags.point_fort_consent ? (flags.point_fort_nom||"").trim() : "";
+
   const payload = {
     source: "formulaire-satisfaction",
-    anonyme: true,
+    anonyme: !signature,
     submitted_at: new Date().toISOString(),
     note_globale: g,
     note_contenu: c,
@@ -684,6 +718,7 @@ function submitToWebhook(){
     point_fort: answers.point_fort || "",
     amelioration: answers.amelioration || "",
     temoignage_autorise: !!flags.point_fort_consent,
+    temoignage_nom: signature,
     promoteur: g >= 4 && /^Oui/.test(answers.recommandation||""),
     alerte: g <= 3 || /^(Non|Peut-être)$/.test(answers.recommandation||""),
     page_url: location.origin + location.pathname
